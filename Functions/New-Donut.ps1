@@ -1,4 +1,5 @@
-<#
+function New-Donut {
+    <#
     .SYNOPSIS
     Creates new Donuts to show some fundamental PowerShell concepts.
 
@@ -14,7 +15,7 @@
     ********    Note that the baker has following business hours    ********
         Monday - Saturday
         8:00 am - 3:00 pm
-    
+
         Outside this business hours you maye receive a PowerShell
         exeption when trying to create new donuts.
 
@@ -47,7 +48,7 @@
     - Blueberry Crunch
 
     .PARAMETER Force
-    
+
     You may force the Donut baker to make Donuts outside his business hours.
 
     .EXAMPLE
@@ -71,71 +72,74 @@
 
     .LINK
     http://github.com/rfc821/Learn-PowerShell-with-Donuts
-#>
+    #>
 
-[CmdletBinding()]    <# add: What-If #>
-param(
-    [Parameter(Mandatory=$True,Position=1,ValueFromPipeline=$True)]
-    [string]$Identity,
-    <# add:   ValueFromPipelineByPropertyName=$true #>
+    [CmdletBinding()]    <# add: What-If #>
+    param(
+        [Parameter(Mandatory=$True,Position=0,ValueFromPipeline=$True,ValueFromPipelineByPropertyName=$True)]
+        [string]$Identity,
+        <# add:   Help Message #>
 
-    [Parameter(Mandatory=$True,Position=1,ValueFromPipeline=$True)]
-    [ValidateSet("Sugar","Boston Creme","Bavarian Creme","Glazed","Blue Sky","Blueberry Crunch")]
-    [string]$Style,
+        [Parameter(Mandatory=$True,Position=1,ValueFromPipelineByPropertyName=$True)]
+        [ValidateSet("Sugar","Boston Creme","Bavarian Creme","Glazed","Blue Sky","Blueberry Crunch")]
+        [string]$Style,
 
-    [Parameter(Mandatory=$False)]
-    [switch]$Force
-)
+        [Parameter(Mandatory=$False)]
+        [switch]$Force
+    )
 
 
-BEGIN {
+    BEGIN {
 
-    Write-Debug "Checking if we are within business hours"
-    if(!($Force)) {
-        $Date = Get-Date
-        if (($Date.DayOfWeek -eq 'Sunday') -or ($Date.Hour -lt 8) -or ($Date.Hour -gt 15)) {
-            throw "Outside business hours. Try again later."
+        Write-Debug "Checking if we are within business hours"
+        if(!($Force)) {
+            $Date = Get-Date
+            if (($Date.DayOfWeek -eq 'Sunday') -or ($Date.Hour -lt 8) -or ($Date.Hour -gt 15)) {
+                throw "Outside business hours. Try again later or use -Force"
+            }
+        } else {
+            Write-Warning "Will force the donut guy to make Donuts!"
         }
+
+        Write-Debug "Creating an empty array if DonutBox does not exist"
+        if ($Global:DonutBox -eq $null) {
+            $Global:DonutBox = @()
+        }
+
     }
 
-    Write-Debug "Creating an empty array if DonutBox does not exist"
-    if ($Global:DonutBox -eq $null) {
-        $Global:DonutBox = @()
+    PROCESS {
+
+        try {
+            Write-Debug "Checking if Donut $Identity is a unique identifier"
+            if (($Global:DonutBox | Where Identity -eq $Identity) -ne $null) {
+            Write-Debug "Throw an exception because Donut already exists"
+            throw "Donut ""$Identity"" already exists."
+            }
+
+            Write-Debug "Checking if Blueberry Crunch available"
+            if ($Date.DayOfWeek -ne 'Wednesday' -and $Style -eq "Blueberry Crunch") {
+                throw "Blueberry Crunch is only available on Wednesday"
+            }
+
+            Write-Debug "Creating a new Donut-Object"
+            $properties = @{Identity = $Identity;
+                            Style = $Style}
+
+            $Donut = New-Object -TypeName PSObject -Property $properties
+            $Donut.PSObject.TypeNames.Insert(0,'DonutObject')
+            Write-Output $Donut
+
+            Write-Debug "Adding Donuts on DonutBox-Variable"
+            $Global:DonutBox += $Donut
+        }
+        catch {
+            Write-Debug "Output Exception Message"
+            $ErrorMessage = $Error[0].Exception.Message
+            Write-Warning $ErrorMessage
+        }
+
     }
 
+    END {}
 }
-
-PROCESS {
-
-    try {
-        Write-Debug "Checking if Donut $Identity is a unique identifier"
-        if (($Global:DonutBox | Where Identity -eq $Identity) -ne $null) {
-           Write-Debug "Throw an exception because Donut already exists"
-           throw "Donut ""$Identity"" already exists."
-        }
-
-        Write-Debug "Checking if Blueberry Crunch available"
-        if ($Date.DayOfWeek -ne 'Wednesday' -and $Style -eq "Blueberry Crunch") {
-            throw "Blueberry Crunch is only available on Wednesday"
-        }
-
-        Write-Debug "Creating a new Donut-Object"
-        $properties = @{Identity = $Identity;
-                        Style = $Style}
-
-        $Donut = New-Object -TypeName PSObject -Property $properties
-        $Donut.PSObject.TypeNames.Insert(0,'DonutObject')
-        Write-Output $Donut
-
-        Write-Debug "Adding Donuts on DonutBox-Variable"
-        $Global:DonutBox += $Donut
-    }
-    catch {
-        Write-Debug "Output Exception Message"
-        $ErrorMessage = $Error[0].Exception.Message
-        Write-Warning $ErrorMessage
-    }
-
-}
-
-END {}

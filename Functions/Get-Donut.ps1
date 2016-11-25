@@ -1,4 +1,5 @@
-<#
+function Get-Donut {
+    <#
     .SYNOPSIS
     Retrieves Donuts to show some fundamental PowerShell concepts.
 
@@ -10,7 +11,7 @@
 
     The Donut module showes following concepts:
     - Writing functions (New-Donut, Set-Donut, Get-Donut)
-    - Use this fuctions to create a simple script-module (Learn-PowerShell-with-Donuts)
+    - Use this functions to create a simple script-module (Learn-PowerShell-with-Donuts)
 
     The functions demonstrate following concepts:
     - Error Handling with try/catch
@@ -42,46 +43,47 @@
 
     .LINK
     http://github.com/rfc821/Learn-PowerShell-with-Donuts
-#>
+    #>
 
-[CmdletBinding()]
-param(
-    [Parameter(Position=1,ValueFromPipeline=$True)]
-    [string]$Identity
-)
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0,ValueFromPipeline=$True,ValueFromPipelineByPropertyName=$True)]
+        [string]$Identity
+    )
 
 
-BEGIN {}
+    BEGIN {}
 
-PROCESS {
+    PROCESS {
 
-    if ($Identity) {
+        if ($Identity) {
 
-        foreach ($Id in $Identity) {
-        Write-Debug "User  specified an Identity. Looking for Identity ""$Id"""
+            foreach ($Id in $Identity) {
+            Write-Debug "User  specified an Identity. Looking for Identity ""$Id"""
 
-            try {
-                $Donut = $Global:DonutBox | Where-Object Identity -eq $Id
-                if ($Donut -eq $Null) {
-                    throw
+                try {
+                    $Donut = $Global:DonutBox | Where-Object Identity -eq $Id
+                    if ($Donut -eq $Null) {
+                        throw
+                    }
+                    
+                    Write-Output $Donut
                 }
-                
-                Write-Output $Donut
+
+                catch {
+                    Write-Warning "Donut ""$Identity"" not found"
+                }
+
             }
 
-            catch {
-                Write-Warning "Donut ""$Identity"" not found"
-            }
+        } else {
+
+            Write-Debug "Output the whole DonutBox"
+            Write-Output $DonutBox
 
         }
 
-    } else {
-
-        Write-Debug "Output the whole DonutBox"
-        Write-Output $DonutBox
-
     }
 
+    END {}
 }
-
-END {}

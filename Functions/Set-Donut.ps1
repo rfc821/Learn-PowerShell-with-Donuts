@@ -1,4 +1,5 @@
-<#
+function Set-Donut {
+    <#
     .SYNOPSIS
     Modifies Donuts to show some fundamental PowerShell concepts.
 
@@ -11,7 +12,7 @@
     ********    Note that the baker has following business hours    ********
         Monday - Saturday
         8:00 am - 3:00 pm
-    
+
         Outside this business hours you maye receive a PowerShell
         exeption when trying to modify donuts.
 
@@ -44,7 +45,7 @@
     - Blueberry Crunch
 
     .PARAMETER Force
-    
+
     You may force the Donut baker to manipulate Donuts outside his business hours.
 
     .EXAMPLE
@@ -67,53 +68,63 @@
 
     .LINK
     http://github.com/rfc821/Learn-PowerShell-with-Donuts
-#>
+    #>
 
-[CmdletBinding()]    <# add: What-If #>
-param(
-    [Parameter(Mandatory=$True,Position=1,ValueFromPipeline=$True)]
-    [string]$Identity,
-    <# add:   ValueFromPipelineByPropertyName=$true #>
+    [CmdletBinding()]    <# add: What-If #>
+    param(
+        [Parameter(Mandatory=$True,Position=0,ValueFromPipeline=$True,ValueFromPipelineByPropertyName=$True)]
+        [string]$Identity,
+        <# add:   Help Message #>
 
-    [Parameter(Mandatory=$True,Position=1,ValueFromPipeline=$True)]
-    [ValidateSet("Sugar","Boston Creme","Bavarian Creme","Glazed","Blue Sky","Blueberry Crunch")]
-    [string]$Style,
+        [Parameter(Mandatory=$True,Position=1,ValueFromPipelineByPropertyName=$True)]
+        [ValidateSet("Sugar","Boston Creme","Bavarian Creme","Glazed","Blue Sky","Blueberry Crunch")]
+        [string]$Style,
 
-    [Parameter(Mandatory=$False)]
-    [switch]$Force
-)
+        [Parameter(Mandatory=$False)]
+        [switch]$Force
+    )
 
-BEGIN {
+        <# add:   Create the module (psm-File)#>
+        <# add:   Create the type files #>
 
-    Write-Debug "Checking if we are within business hours"
-    if(!($Force)) {
-        $Date = Get-Date
-        if (($Date.DayOfWeek -eq 'Sunday') -or ($Date.Hour -lt 8) -or ($Date.Hour -gt 15)) {
-            throw "Outside business hours. Try again later."
+    BEGIN {
+
+        Write-Debug "Checking if we are within business hours"
+        if(!($Force)) {
+            $Date = Get-Date
+            if (($Date.DayOfWeek -eq 'Sunday') -or ($Date.Hour -lt 8) -or ($Date.Hour -gt 15)) {
+                throw "Outside business hours. Try again later or use -Force"
+            }
+        } else {
+            Write-Warning "Will force the donut guy to make Donuts!"
         }
+        <# add:   funny error messages during daytime and evenings #>
+
     }
-    <# add:   funny error messages during daytime and evenings #>
 
-}
+    PROCESS {
 
-PROCESS {
+        try {
+            Write-Verbose "Checking if Donut $Identity exists"
+            if (!($Global:DonutBox.$Identity)) {
+                throw "Can not find Donut ""$Identity"""
+            }
+            <# add: Blueberry Crunch only on Wednesdays! - Exception #> <# add: Information for catch about the error #>
 
-    try {
-        Write-Verbose "Checking if Donut $Identity exists"
-        if (!($Global:DonutBox.$Identity)) {
-            throw <# add: Information for catch about the error #>
+            Write-Verbose "Modify Donut-Object"
+            $Index = [array]::IndexOf($Global:DonutBox.Identity, $Identity)
+            Write-Debug "Identity ""$Identity"" in Array DonutBox has index number ""$Index"""
+            Write-Verbose "Donut ""$Index"" will now get ""$Style"""
+            $Global:DonutBox[$Index].Style = $Style
+
+            <# add:   fixed error handling with $_ #>
+
         }
-        <# add: Blueberry Crunch only on Wednesdays! - Exception #> <# add: Information for catch about the error #>
-
-        Write-Verbose "Modify Donut-Object"
-        <# add:   find out array number from existing Donut #>
-        <# add:   modify the existing object #>
+        catch {
+            Write-Warning "Donut ""$Identity"" not exists!"
+        }
 
     }
-    catch {
-        Write-Warning "Donut ""$Identity"" not exists!"
-    }
 
+    END {}
 }
-
-END {}
