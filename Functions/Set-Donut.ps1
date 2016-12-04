@@ -39,7 +39,7 @@ function Set-Donut {
     Sets the kind of Donut you want. Option are:
     - Sugar
     - Boston Creme
-    - Bavarian Creme
+    - Sprinkles
     - Glazed
     - Blue Sky
     - Blueberry Crunch
@@ -77,7 +77,7 @@ function Set-Donut {
         <# add:   Help Message #>
 
         [Parameter(Mandatory=$True,Position=1,ValueFromPipelineByPropertyName=$True)]
-        [ValidateSet("Sugar","Boston Creme","Bavarian Creme","Glazed","Blue Sky","Blueberry Crunch")]
+        [ValidateSet("Sugar","Boston Creme","Sprinkles","Glazed","Blue Sky","Blueberry Crunch")]
         [string]$Style,
 
         [Parameter(Mandatory=$False)]
